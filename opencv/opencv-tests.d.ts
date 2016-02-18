@@ -8,11 +8,20 @@ function testBoilerplate() {
 function testMatrix() {
 
   // ctor
+  var m0 : cv.Matrix = new Matrix();
   var m0 : cv.Matrix = new Matrix(5, 5);
   var m1 : cv.Matrix = new Matrix(5, 5, cv.Constants.CV_8UC1);
   var m1 : cv.Matrix = new Matrix(5, 5, cv.Constants.CV_8U, [1]);
+  var m1 : cv.Matrix = new Matrix(m1, 1, 1, 4, 4);
 
   var i4 = cv.Matrix.Eye(4, 4);
+  var i4 = cv.Matrix.Eye(4, 4, cv.Constants.CV_8U); // CV_64FC1 by default
+
+  var i4 = cv.Matrix.Ones(4, 4);
+  var i4 = cv.Matrix.Ones(4, 4, cv.Constants.CV_8U); // CV_64FC1 by default
+
+  var i4 = cv.Matrix.Zeros(4, 4);
+  var i4 = cv.Matrix.Zeros(4, 4, cv.Constants.CV_8U); // CV_64FC1 by default
 
   // Accessors
   var r0 : number[] = i4.row(0);
@@ -20,11 +29,151 @@ function testMatrix() {
   var pr0 : number[] = i4.pixelRow(0);
   var cr0 : number[] = i4.pixelCol(0);
   var el0 : number = i4.get(0, 0);
+  var p0 : number = i4.pixel(0, 0);
+  var p1 : [number, number, number] = im.pixel(0, 0);
 
   // Attrs
   var w0 : number = i4.width();
-  var w0 : number = i4.height();
+  var h0 : number = i4.height();
+  var c : number = i4.channels();
+  var is_e : boolean = i4.empty();
 
+  // Mutators
+  im.pixel(0, 0, [255, 255, 255]);
+  i4.pixel(0, 0, 0.9);
+
+  // Mutating pixelwise ops
+  im.brightness(1.0, 1.0);
+  im.normalize(0.1, 0.9, cv.NORM_MINMAX, cv.CV_8U);
+  im.absDiff(im1, im2);
+  im.addWeighted(im1, 0.75, im2, 0.25);
+
+  var im2 : cv:Matrix = im.copy();
+
+  var mask : cv.Matrix = Eye(5, 5);
+  im.bitwiseXor(im1, im2, mask);
+  im.bitwiseAnd(im1, im2, mask);
+  im.bitwiseNot(im1, mask);
+
+  var merge : im.merge(im.split());
+
+  // Mutating image ops
+  im.resize(100, 100, cv.INTER_LINEAR);
+  im.resize(100, 100);
+  im.rotate(90, 150, 150);
+  im.warpAffine(cv.Eye(3, 3), 100, 100);
+
+  im.pyrDown();
+  im.pyrUp();
+
+  im.convertGrayscale();
+  im.convertHSVscale();
+
+  im.gaussianBlur();
+  im.gaussianBlur([5, 5]);
+
+  im.medianBlur(5);
+  im.bilateralFilter();
+  im.bilateralFilter(15, 80, 80);
+  im.bilateralFilter(15, 80, 80, cv.BORDER_DEFAULT);
+
+  im.cvtColor("CV_BGR2HSV");
+
+  // Linear algebra
+  var n0 : number = im.norm(im, cv.NORM_L2, im);
+  var n1 : number = im.norm(im);
+  var n2 : number = im.norm(im, im);
+  var n3 : number = im.norm(im, cv.NORM_L2);
+  var n4 : number = im.norm(cv.NORM_L2, im);
+  var n5 : number = im.norm(cv.NORM_L2);
+  var n6 : number = im.norm();
+
+  // Buffer IO
+  var buf : Buffer = getData();
+  var buf0 : Buffer = im.ptr();
+  var buf0 : Buffer = im.ptr(0);
+
+  // File IO
+  im.saveAsync('foo.jpg', (err : Error, success: number) => {})
+
+  // Pure pixelwise ops
+  var im1 : cv.Matrix = im.clone();
+
+  im.toBufferAsync((Error, i : Buffer) => {}, {ext: ".jpg", jpegQuality: 75, pngCompression: 75});
+
+  var t0 : cv.Matrix = im.threshold(10, 20);
+  var t1 : cv.Matrix = im.threshold(10, 20, cv.THRESH_BINARY);
+  var t2 : cv.Matrix = im.threshold(10, 20, cv.THRESH_BINARY, "Simple");
+
+
+  // Pure image ops
+  var t3 : cv.Matrix = adaptiveThreshold(10, 20, cv.THRESH_BINARY, cv.ADAPTIVE_THRESH_MEAN_C, 4, 0);
+  var im1 : cv.Matrix = im.flip(-1);
+  var split : cv.Matrix[] = im.split();
+
+  // sobel
+  // TODO - sobel wrapper doesn't seem to be consistent with opencv docs
+
+  // Mutating drawing
+  im.fillPoly([[[0, 0], [100, 100], [0, 100]], [[0, 0], [100, 0], [100, 100]]], [255, 0, 0]);
+  im.copyTo(im1, 50, 50);
+
+  im.convertTo(im1, cv.CV_32FC1);
+  im.convertTo(im1, cv.CV_32FC1, 1);
+  im.convertTo(im1, cv.CV_32FC1, 1, 1);
+
+  // Stats
+  var nz : number = im.countNonZero();
+  var msd : cv.MeanStd = im.meanStdDev();
+
+  // Algos
+
+  var moments : cv.Moments = im.moments();
+
+  var hl0 : [number, number, number, number][] = im.houghLinesP();
+  var hl1 : [number, number, number, number][] = im.houghLinesP(1);
+  var hl2 : [number, number, number, number][] = im.houghLinesP(1, cv.CV_PI/180);
+  var hl3 : [number, number, number, number][] = im.houghLinesP(1, cv.CV_PI/180, 80);
+  var hl4 : [number, number, number, number][] = im.houghLinesP(1, cv.CV_PI/180, 80, 30);
+  var hl5 : [number, number, number, number][] = im.houghLinesP(1, cv.CV_PI/180, 80, 30, 10);
+
+  var hc0 : [number, number, number][] = im.houghCircles();
+  var hc1 : [number, number, number][] = im.houghCircles(1);
+  var hc2 : [number, number, number][] = im.houghCircles(1, 1);
+  var hc3 : [number, number, number][] = im.houghCircles(1, 1, 100);
+  var hc4 : [number, number, number][] = im.houghCircles(1, 1, 100, 100);
+  var hc5 : [number, number, number][] = im.houghCircles(1, 1, 100, 100, 0);
+  var hc6 : [number, number, number][] = im.houghCircles(1, 1, 100, 100, 0, 0);
+
+  var gf : [number, number][] = mat.goodFeaturesToTrack();
+
+  // ROI
+  im.adjustROI(0, 0, 400, 400);
+  var roi : [number, number, number, number] = im.locateROI();
+
+  // TODO - EqualizeHist just crashes if the type is CV_8UC1
+  equalizeHist
+
+// ..... aaaaaaaand that's enough for today
+//  var ff0 = floodFill();
+  matchTemplate
+  templateMatch
+  minMaxLoc
+  pushBack
+  putText
+  copyWithMask
+  setWithMask
+  meanWithMask
+  shift
+  reshape
+  release
+
+  .getRotationMatrix2D
+
+
+  
+
+  // TODO - compare with functions from docs:
 
   // Assignment
   i4.set(0, 0, 255);
